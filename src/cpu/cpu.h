@@ -23,6 +23,7 @@ typedef struct{
 	uint16_t PC, SP;
 	//Flag Register
 	uint8_t F;
+
 	uint32_t cycles;
 
 }CPU;
