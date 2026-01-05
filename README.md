@@ -1,1 +1,2 @@
-Nintendo Gameboy DMG-01 System Emulation on STM32F103(Blue Pill)
+Nintendo Gameboy DMG-01 System Emulation on STM32F103(Blue Pill) and Raspberry Pi Pico 2
+
