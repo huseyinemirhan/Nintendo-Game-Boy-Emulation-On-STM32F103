@@ -25,15 +25,13 @@ int main(){
 	Memory_Init();
 	Cartridge_Init(&memory.cartridge, rom_data);
 	CPU_Init();
-
-	while(1){
-
-	}
-	for(int i = 0; i<10, i++){
+	
+	for(int i = 0; i<10; i++){
 		int cpu_cyles = CPU_Step();
 	}
 
 	return 0;
+
 
 }
 

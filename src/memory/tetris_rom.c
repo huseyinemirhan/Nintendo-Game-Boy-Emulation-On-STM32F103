@@ -823,4 +823,4 @@ const uint8_t tetris_rom[] __attribute__((section(".rodata"))) = { 0xC3, 0x8B, 0
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-const uint32_t rom_size = sizeof(rom_data);
+const uint32_t tetris_rom_size = sizeof(tetris_rom);

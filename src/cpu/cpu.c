@@ -48,18 +48,18 @@ static int op_##name(){\
 	uint8_t result = reg + 1;\
 	CPU_Clear_Flag(N_FLAG);		\
 	(result == 0) ? CPU_Set_Flag(Z_FLAG) : CPU_Clear_Flag(Z_FLAG); \
-	((cpu.A & 0x0F) < (reg & 0x0F)) ? CPU_Set_Flag(H_FLAG) : CPU_Clear_Flag(H_FLAG); \
+	((reg & 0x0F) == 0x0F) ? CPU_Set_Flag(H_FLAG) : CPU_Clear_Flag(H_FLAG); \
 	reg = result; \
 	return 4;\
 }
 
-#define DEC_R(name, reg)\ 
-static int op_##name(){\
+#define DEC_R(name, reg) \
+static int op_##name(){ \
 	uint8_t result = reg - 1;\
-	CPU_Set_Flag(N_FLAG);		\
-	(result == 0) ? CPU_Set_Flag(Z_FLAG) : CPU_Clear_Flag(Z_FLAG); \
-	((reg & 0xFF) == 0) ? CPU_Set_Flag(H_FLAG) : CPU_Clear_Flag(H_FLAG); \
-	reg = result; \
+	CPU_Set_Flag(N_FLAG);\
+	(result == 0) ? CPU_Set_Flag(Z_FLAG) : CPU_Clear_Flag(Z_FLAG);\
+	((reg & 0x0F) == 0) ? CPU_Set_Flag(H_FLAG) : CPU_Clear_Flag(H_FLAG);\
+	reg = result;\
 	return 4;\
 }
 
@@ -72,7 +72,7 @@ static int op_##name(){\
 	return 8;\
 }
 
-#define DEC_R16(name, reg)\
+#define DEC_R16(name, reg1, reg2)\
 static int op_##name(){\
 	uint16_t r16 = (reg1 << 8) | reg2;\
 	r16--;			\
@@ -102,6 +102,43 @@ static int op_##name(){\
 	cpu.A = res;	\
 	return 4; \
 }
+
+#define ADC_R(name, reg)\
+static int op_##name(){\
+	uint8_t Cy = CPU_Get_Flag(C_FLAG);\
+	uint16_t full_sum = cpu.A + reg + Cy;\
+	uint8_t res = (uint8_t)full_sum; \
+	CPU_Clear_Flag(N_FLAG);	\
+	(res == 0) ? CPU_Set_Flag(Z_FLAG) : CPU_Clear_Flag(Z_FLAG);\
+	((cpu.A & 0x0F) + (reg & 0x0F) + Cy > 0x0F) ? CPU_Set_Flag(H_FLAG) : CPU_Clear_Flag(H_FLAG);\
+	(full_sum > 0xFF)	? CPU_Set_Flag(C_FLAG) : CPU_Clear_Flag(C_FLAG);\
+	cpu.A = res;	\
+	return 4; \
+}
+
+#define SBC_R(name, reg)\
+static int op_##name(){\
+	uint8_t Cy = CPU_Get_Flag(C_FLAG);\
+	int res = cpu.A - reg - Cy; \
+	CPU_Set_Flag(N_FLAG);	\
+	(res == 0) ? CPU_Set_Flag(Z_FLAG) : CPU_Clear_Flag(Z_FLAG);\
+	((cpu.A & 0x0F) < (reg & 0x0F) + Cy) ? CPU_Set_Flag(H_FLAG) : CPU_Clear_Flag(H_FLAG);\
+	((uint16_t)reg + (uint16_t)Cy > (uint16_t)cpu.A)	? CPU_Set_Flag(C_FLAG) : CPU_Clear_Flag(C_FLAG);\
+    cpu.A = res; \
+    return 4; \
+}
+
+#define ADD_R_N(name)\
+static int op_##name(){\
+	uint8_t val = Memory_Read_Byte(cpu.PC++);\
+	uint8_t res = cpu.A + val;\
+	CPU_Clear_Flag(N_FLAG);\
+	(res == 0) ? CPU_Set_Flag(Z_FLAG) : CPU_Clear_Flag(Z_FLAG);\ 
+	(cpu.A & 0x0F) + (val & 0xF) > 0xF ? CPU_Set_Flag(H_FLAG : CPU_Clear_Flag(H_FLAG));\
+	cpu.A > res ? CPU_Set_Flag(C_FLAG) : CPU_Clear_Flag(C_FLAG);\
+	return 8;\
+}
+
 
 
 //LD r,n
@@ -285,9 +322,9 @@ static int op_31(){
 static int op_08(){
 	uint8_t lower = Memory_Read_Byte(cpu.PC++);
 	uint8_t higher = Memory_Read_Byte(cpu.PC++);
-	uint16_t addr = ((higher << 8) | lower)
+	uint16_t addr = ((higher << 8) | lower);
 	Memory_Write_Byte(addr, cpu.SP & 0xFF);
-	Memory_Write_Byte(addr, cpu.SP >> 8);
+	Memory_Write_Byte(addr+1, cpu.SP >> 8);
 	return 20;
 }
 
