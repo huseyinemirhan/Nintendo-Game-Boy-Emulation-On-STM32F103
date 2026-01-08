@@ -325,6 +325,13 @@ CP_R(BC, cpu.H)  CP_R(BD, cpu.L)  CP_R(BF, cpu.A)
 ADD_HL_R16(09, cpu.B, cpu.C)
 ADD_HL_R16(19, cpu.D, cpu.E)
 ADD_HL_R16(29, cpu.H, cpu.L)
+// --- 16-bit INC DEC ---
+INC_R16(03, cpu.B, cpu.C) 
+INC_R16(13, cpu.D, cpu.E) 
+INC_R16(23, cpu.H, cpu.L) 
+DEC_R16(0B, cpu.B, cpu.C) 
+DEC_R16(1B, cpu.D, cpu.E) 
+DEC_R16(2B, cpu.H, cpu.L) 
 
 CPU cpu = {0};
 
@@ -676,6 +683,17 @@ static int op_2F(){
 	return 4;
 }
 
+//INC/DEC SP
+static int op_33() { 
+	cpu.SP++; 
+	return 8; 
+}
+
+static int op_3B() { 
+	cpu.SP--; 
+	return 8; 
+}
+
 
 static int op_undefined(){
 
@@ -707,6 +725,10 @@ const opcode_func opcode_func_table[256] = {
 
     // --- 16-bit Arithmetic ---
     [0x09]=op_09, [0x19]=op_19, [0x29]=op_29, [0x39]=op_39, // ADD HL, rr
+
+	// --- 16-bit INC/DEC  ---
+    [0x03] = op_03, [0x13] = op_13, [0x23] = op_23, [0x33] = op_33, // INC rr
+    [0x0B] = op_0B, [0x1B] = op_1B, [0x2B] = op_2B, [0x3B] = op_3B, // DEC rr
 
     // --- Miscellaneous ---
     [0x27]=op_27, [0x2F]=op_2F, [0x37]=op_37, [0x3F]=op_3F, // DAA, CPL, SCF, CCF
